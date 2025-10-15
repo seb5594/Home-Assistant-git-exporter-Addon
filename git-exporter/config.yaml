@@ -1,5 +1,5 @@
 name: Home Assistant Git Exporter
-version: 0.2dev
+version: 0.3dev
 slug: git-exporter
 description: Export all of your Home Assistant configuration to a git repository of your choice
 url: https://github.com/seb5594/Home-Assistant-git-exporter-Addon/edit/main/git-exporter
@@ -15,7 +15,10 @@ init: false
 hassio_api: true
 hassio_role: manager
 map:
-  - config
+  - type: config
+    read_only: false
+  - type: all_addon_configs
+    read_only: false
 options:
   repository:
     url: ''
