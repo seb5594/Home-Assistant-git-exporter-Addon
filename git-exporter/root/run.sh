@@ -45,7 +45,7 @@ function setup_git {
         git config user.email "${commiter_mail:-git.exporter@home-assistant}"
     fi
 
-    #Reset secrets if existing
+    # Reset secrets if existing
     git config --unset-all 'secrets.allowed' || true
     git config --unset-all 'secrets.patterns' || true
     git config --unset-all 'secrets.providers' || true
@@ -95,7 +95,6 @@ function check_secrets {
     bashio::log.info "Prohibited patterns:\n${prohibited_patterns//\\n/\\\\n}"
 
     readarray -t <<<"$(bashio::config 'secrets' | grep -v '^$')"
-    # shellcheck disable=SC2128
     if [ -n "$MAPFILE" ] && [ ${#MAPFILE[@]} -gt 0 ]; then
         bashio::log.info 'Add custom secrets'
         for secret in "${MAPFILE[@]}"; do
@@ -104,7 +103,6 @@ function check_secrets {
     fi
 
     readarray -t <<<"$(bashio::config 'allowed_secrets' | grep -v '^$')"
-    # shellcheck disable=SC2128
     if [ -n "$MAPFILE" ] && [ ${#MAPFILE[@]} -gt 0 ]; then
         bashio::log.info 'Add custom allowed secrets'
         for allowed_secret in "${MAPFILE[@]}"; do
@@ -113,108 +111,67 @@ function check_secrets {
     fi
 
     bashio::log.info 'Checking for secrets'
-    # shellcheck disable=SC2046
     git secrets --scan $(find $local_repository -name '*.yaml' -o -name '*.yml' -o -name '*.json' -o -name '*.disabled') \
     || (bashio::log.error 'Found secrets in files!!! Fix them to be able to commit! See https://www.home-assistant.io/docs/configuration/secrets/ for more information!' && exit 1)
 }
 
 function export_ha_config {
     bashio::log.info 'Export Home Assistant configuration'
-    
-    # Prepare excludes
     excludes=$(bashio::config 'exclude')
     excludes=("secrets.yaml" ".storage" ".cloud" "esphome/" ".uuid" "node-red/" "${excludes[@]}")
-    
-    # Remove old ESPHome folder from repo to prevent stale data
     [ -d "${local_repository}/config/esphome" ] && rm -r "${local_repository}/config/esphome"
-
-    # Build exclude arguments for rsync
     exclude_args=$(printf -- '--exclude=%s ' ${excludes[@]})
-
-    # Sync configuration and remove files that are no longer present
     rsync -av --compress --delete --checksum --prune-empty-dirs -q --include='.gitignore' $exclude_args /config/ "${local_repository}/config/"
-
-    # Redact secrets in exported repo
     sed 's/:.*$/: ""/g' /config/secrets.yaml > "${local_repository}/config/secrets.yaml"
-
-    # Set proper permissions
     chmod 644 -R "${local_repository}/config"
 }
 
 function export_lovelace {
     bashio::log.info 'Export Lovelace configuration'
-    
-    # Create directories if missing
     [ ! -d "${local_repository}/lovelace" ] && mkdir -p "${local_repository}/lovelace"
     mkdir -p '/tmp/lovelace'
-
-    # Copy Lovelace JSON files to temp, convert to YAML
     find /config/.storage -name "lovelace*" -printf '%f\n' | xargs -I % cp /config/.storage/% /tmp/lovelace/%.json
     /utils/jsonToYaml.py '/tmp/lovelace/' 'data'
-
-    # Sync to repository, remove files no longer present
     rsync -av --compress --delete --checksum --prune-empty-dirs -q --include='*.yaml' --exclude='*' /tmp/lovelace/ "${local_repository}/lovelace"
-
-    # Set proper permissions
     chmod 644 -R "${local_repository}/lovelace"
 }
 
 function export_esphome {
     bashio::log.info 'Export ESPHome configuration'
-
-    # Sync ESPHome folder with repo and remove obsolete files
     rsync -av --compress --delete --checksum --prune-empty-dirs -q \
          --exclude='.esphome*' --include='*/' --include='.gitignore' --include='*.yaml' --include='*.disabled' --exclude='secrets.yaml' --exclude='*' \
         /config/esphome/ "${local_repository}/esphome/"
-
-    # Redact secrets in ESPHome configs
     [ -f /config/esphome/secrets.yaml ] && sed 's/:.*$/: ""/g' /config/esphome/secrets.yaml > "${local_repository}/esphome/secrets.yaml"
-
-    # Set proper permissions
-    chmod 644 -R "${local_repository}/esphome"
+    chmod 644 -R ${local_repository}/esphome
 }
 
 function export_addons {
     [ -d ${local_repository}/addons ] || mkdir -p ${local_repository}/addons
     installed_addons=$(bashio::addons.installed)
     mkdir -p '/tmp/addons/'
-
-    # Export installed addon options
     for addon in $installed_addons; do
         if [ "$(bashio::addons.installed "${addon}")" == 'true' ]; then
             bashio::log.info "Get ${addon} configs"
-            bashio::addon.options "$addon" >  /tmp/tmp.json
+            bashio::addon.options "$addon" > /tmp/tmp.json
             /utils/jsonToYaml.py /tmp/tmp.json
             mv /tmp/tmp.yaml "/tmp/addons/${addon}.yaml"
         fi
     done
-
     bashio::log.info "Get addon repositories"
     bashio::api.supervisor GET "/store/repositories" false \
       | jq '. | map(select(.source != null and .source != "core" and .source != "local")) | map({(.name): {source,maintainer,slug}}) | add' > /tmp/tmp.json
     /utils/jsonToYaml.py /tmp/tmp.json
     mv /tmp/tmp.yaml "/tmp/addons/repositories.yaml"
-
-    # Cleanup removed or excluded addon files in repository
-    rsync -archive --compress --delete --checksum --prune-empty-dirs -q /tmp/addons/ ${local_repository}/addons
-
-    # Ensure correct permissions
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q /tmp/addons/ ${local_repository}/addons
     chmod 644 -R ${local_repository}/addons
 }
 
 function export_addon_configs {
     if bashio::config.true 'export.addon_configs'; then
         bashio::log.info "Exporting /addon_configs directory..."
-
-        # Target directory in repo
         mkdir -p "${local_repository}/addons_config"
-
-        # Sync directly and remove files no longer present
         rsync -av --delete /addon_configs/ "${local_repository}/addons_config/" --exclude '.git'
-
-        # Ensure correct permissions
         chmod 644 -R "${local_repository}/addons_config"
-
         bashio::log.info "Addon configs exported successfully"
     else
         bashio::log.info "Addon config export disabled"
@@ -222,75 +179,63 @@ function export_addon_configs {
 }
 
 function export_node-red {
-    bashio::log.info 'Get Node-RED flows'
-    rsync -archive --compress --delete --checksum --prune-empty-dirs -q \
+    bashio::log.info 'Export Node-RED flows'
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q \
           --exclude='flows_cred.json' --exclude='*.backup' --include='flows.json' --include='settings.js' --exclude='*' \
         /config/node-red/ ${local_repository}/node-red
     chmod 644 -R ${local_repository}/node-red
 }
 
+function cleanup_repo_files {
+    bashio::log.info "Cleaning up repository before commit..."
+
+    # Remove excluded files
+    excludes=$(bashio::config 'exclude')
+    excludes=("secrets.yaml" ".storage" ".cloud" "esphome/" ".uuid" "node-red/" "addons_config/" "${excludes[@]}")
+    for pattern in "${excludes[@]}"; do
+        find "$local_repository" -path "$local_repository/$pattern" -exec rm -rf {} +
+    done
+
+    # Remove binary files except text/bash scripts
+    find "$local_repository" -type f ! -name "*.sh" ! -name "*.yaml" ! -name "*.yml" ! -name "*.json" ! -name "*.js" -print0 |
+    while IFS= read -r -d '' file; do
+        file_type=$(file "$file")
+        if echo "$file_type" | grep -qE 'executable|binary|ELF|PE32'; then
+            bashio::log.info "Removing binary file from repo: $file"
+            rm -f "$file"
+        fi
+    done
+
+    # Normalize permissions
+    find "${local_repository}" -type d -exec chmod 755 {} \;
+    find "${local_repository}" -type f -exec chmod 644 {} \;
+    find "${local_repository}" -type f -name "*.sh" -exec chmod 755 {} \;
+    chown -R root:root "${local_repository}"
+
+    bashio::log.info "✅ Cleanup complete."
+}
+
 bashio::log.info 'Start git export'
 
 setup_git
-
 export_ha_config
-
-if [ "$(bashio::config 'export.lovelace')" == 'true' ]; then
-    export_lovelace
-fi
-
-if [ "$(bashio::config 'export.esphome')" == 'true' ] && [ -d '/config/esphome' ]; then
-    export_esphome
-fi
-
-if [ "$(bashio::config 'export.addons')" == 'true' ]; then
-    export_addons
-fi
-
-if [ "$(bashio::config 'export.addon_configs')" == 'true' ]; then
-    export_addon_configs
-fi
-
-if [ "$(bashio::config 'export.node_red')" == 'true' ] && [ -d '/config/node-red' ]; then
-    export_node-red
-fi
-
-if [ "$(bashio::config 'check.enabled')" == 'true' ]; then
-    check_secrets
-fi
-
+[ "$(bashio::config 'export.lovelace')" == 'true' ] && export_lovelace
+[ "$(bashio::config 'export.esphome')" == 'true' ] && [ -d '/config/esphome' ] && export_esphome
+[ "$(bashio::config 'export.addons')" == 'true' ] && export_addons
+[ "$(bashio::config 'export.addon_configs')" == 'true' ] && export_addon_configs
+[ "$(bashio::config 'export.node_red')" == 'true' ] && [ -d '/config/node-red' ] && export_node-red
+[ "$(bashio::config 'check.enabled')" == 'true' ] && check_secrets
 
 if [ "$(bashio::config 'dry_run')" == 'true' ]; then
     git status
 else
-    # --- normalize file permissions before committing ---
-    bashio::log.info 'Normalizing file permissions before commit...'
-
-    # Alle Ordner auf 755
-    find "${local_repository}" -type d -exec chmod 755 {} \;
-
-    # Alle Dateien auf 644
-    find "${local_repository}" -type f -exec chmod 644 {} \;
-
-    # Shell-/Bash-Skripte dürfen 755 behalten
-    find "${local_repository}" -type f -name "*.sh" -exec chmod 755 {} \;
-
-    # Ownership auf root:root
-    chown -R root:root "${local_repository}"
-
-    bashio::log.info '✅ File permissions normalized. Only .sh files are executable.'
+    cleanup_repo_files
 
     bashio::log.info 'Commit changes and push to remote'
     git add .
-
-    # add the possibility for {DATE} placeholder
-    # original commit_message aus config holen
     commit_msg="$(bashio::config 'repository.commit_message')"
     commit_msg="${commit_msg//\{DATE\}/$(date +'%Y-%m-%d %H:%M:%S')}"
-
-    # Commit durchführen
     git commit -m "$commit_msg"
-
     if [ ! "$pull_before_push" == 'true' ]; then
         git push --set-upstream origin "$branch" -f
     else
@@ -299,8 +244,6 @@ else
 fi
 
 bashio::log.info 'Exporter finished successfully. Preparing to stop add-on...'
-
-# Try to stop the addon gracefully via Supervisor
 if bashio::var.has_value "$(bashio::addon.slug)"; then
     bashio::log.info 'Requesting Supervisor to stop this add-on...'
     bashio::addon.stop || bashio::log.warning 'Supervisor stop request failed, exiting manually.'
