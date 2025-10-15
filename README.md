@@ -1,14 +1,5 @@
 # Home Assistant Git Exporter
 
-This add-on has been **improved** with the following updates:
-
-> - ✅ Fully respects **exclude rules** and removes unwanted files from the repository.  
-> - ✅ Proper export of **add-on configs** from `/addon_configs`.  
-> - ✅ **Commit messages** now support a `{DATE}` placeholder for automatic timestamping.  
-> - ✅ Only **shell scripts are executable**; all other files have **normalized permissions**.  
-> - ✅ Optional **secret and IP checks** to prevent sensitive data from being committed.  
-> - ✅ Add-on **stops automatically** after a successful export, reducing manual intervention.
-
 Export all of your Home Assistant configuration to a git repository of your choice.  
 Can be used to show your Home Assistant setup in public repositories.
 
@@ -22,6 +13,16 @@ Can be used to show your Home Assistant setup in public repositories.
 [![Add repository on my Home Assistant][repository-badge]][repository-url]
 [![Install on my Home Assistant][install-badge]][install-url]
 [![Donate][donation-badge]][donation-url]
+
+This add-on has been **improved** with the following updates:
+
+> - ✅ Fully respects **exclude rules** and removes unwanted files from the repository.  
+> - ✅ Proper export of **add-on configs** from `/addon_configs`.  
+> - ✅ **Commit messages** now support a `{DATE}` placeholder for automatic timestamping.  
+> - ✅ Only **shell scripts are executable**; all other files have **normalized permissions**.  
+> - ✅ Optional **secret and IP checks** to prevent sensitive data from being committed.  
+> - ✅ Add-on **stops automatically** after a successful export, reducing manual intervention.
+
 
 # Functionality
 
@@ -42,7 +43,7 @@ The folders there are getting synced with this addon.
 
 If you export your config with this addon and want to help me to spread it further, here is a badge you can embed in your README.
 
-[![Home Assistant Git Exporter](https://img.shields.io/badge/Powered%20by-Home%20Assistant%20Git%20Exporter-%23d32f2f)](https://github.com/Poeschl/Hassio-Addons/tree/main/git-exporter)
+[![Home Assistant Git Exporter](https://img.shields.io/badge/Powered%20by-Home%20Assistant%20Git%20Exporter-%23d32f2f)]([https://github.com/seb5594/Home-Assistant-git-exporter-Addon/tree/main/git-exporter](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/git-exporter)
 
 ```markdown
 [![Home Assistant Git Exporter](https://img.shields.io/badge/Powered%20by-Home%20Assistant%20Git%20Exporter-%23d32f2f)](https://github.com/Poeschl/Hassio-Addons/tree/main/git-exporter)
