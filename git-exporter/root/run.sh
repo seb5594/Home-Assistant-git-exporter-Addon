@@ -119,43 +119,67 @@ function check_secrets {
 }
 
 function export_ha_config {
-    bashio::log.info 'Get Home Assistant config'
+    bashio::log.info 'Export Home Assistant configuration'
+    
+    # Prepare excludes
     excludes=$(bashio::config 'exclude')
     excludes=("secrets.yaml" ".storage" ".cloud" "esphome/" ".uuid" "node-red/" "${excludes[@]}")
-
-    # Cleanup existing esphome folder from config
+    
+    # Remove old ESPHome folder from repo to prevent stale data
     [ -d "${local_repository}/config/esphome" ] && rm -r "${local_repository}/config/esphome"
-    # shellcheck disable=SC2068
+
+    # Build exclude arguments for rsync
     exclude_args=$(printf -- '--exclude=%s ' ${excludes[@]})
-    # shellcheck disable=SC2086
-    rsync -archive --compress --delete --checksum --prune-empty-dirs -q --include='.gitignore' $exclude_args /config ${local_repository}
-    sed 's/:.*$/: ""/g' /config/secrets.yaml > ${local_repository}/config/secrets.yaml
-    chmod 644 -R ${local_repository}/config
+
+    # Sync configuration and remove files that are no longer present
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q --include='.gitignore' $exclude_args /config/ "${local_repository}/config/"
+
+    # Redact secrets in exported repo
+    sed 's/:.*$/: ""/g' /config/secrets.yaml > "${local_repository}/config/secrets.yaml"
+
+    # Set proper permissions
+    chmod 644 -R "${local_repository}/config"
 }
 
 function export_lovelace {
-    bashio::log.info 'Get Lovelace config yaml'
-    [ ! -d "${local_repository}/lovelace" ] && mkdir "${local_repository}/lovelace"
+    bashio::log.info 'Export Lovelace configuration'
+    
+    # Create directories if missing
+    [ ! -d "${local_repository}/lovelace" ] && mkdir -p "${local_repository}/lovelace"
     mkdir -p '/tmp/lovelace'
+
+    # Copy Lovelace JSON files to temp, convert to YAML
     find /config/.storage -name "lovelace*" -printf '%f\n' | xargs -I % cp /config/.storage/% /tmp/lovelace/%.json
     /utils/jsonToYaml.py '/tmp/lovelace/' 'data'
-    rsync -archive --compress --delete --checksum --prune-empty-dirs -q --include='*.yaml' --exclude='*' /tmp/lovelace/ "${local_repository}/lovelace"
+
+    # Sync to repository, remove files no longer present
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q --include='*.yaml' --exclude='*' /tmp/lovelace/ "${local_repository}/lovelace"
+
+    # Set proper permissions
     chmod 644 -R "${local_repository}/lovelace"
 }
 
 function export_esphome {
-    bashio::log.info 'Get ESPHome configs'
-    rsync -archive --compress --delete --checksum --prune-empty-dirs -q \
+    bashio::log.info 'Export ESPHome configuration'
+
+    # Sync ESPHome folder with repo and remove obsolete files
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q \
          --exclude='.esphome*' --include='*/' --include='.gitignore' --include='*.yaml' --include='*.disabled' --exclude='secrets.yaml' --exclude='*' \
-        /config/esphome ${local_repository}
-    [ -f /config/esphome/secrets.yaml ] && sed 's/:.*$/: ""/g' /config/esphome/secrets.yaml > ${local_repository}/esphome/secrets.yaml
-    chmod 644 -R ${local_repository}/esphome
+        /config/esphome/ "${local_repository}/esphome/"
+
+    # Redact secrets in ESPHome configs
+    [ -f /config/esphome/secrets.yaml ] && sed 's/:.*$/: ""/g' /config/esphome/secrets.yaml > "${local_repository}/esphome/secrets.yaml"
+
+    # Set proper permissions
+    chmod 644 -R "${local_repository}/esphome"
 }
 
 function export_addons {
     [ -d ${local_repository}/addons ] || mkdir -p ${local_repository}/addons
     installed_addons=$(bashio::addons.installed)
-    mkdir '/tmp/addons/'
+    mkdir -p '/tmp/addons/'
+
+    # Export installed addon options
     for addon in $installed_addons; do
         if [ "$(bashio::addons.installed "${addon}")" == 'true' ]; then
             bashio::log.info "Get ${addon} configs"
@@ -164,12 +188,17 @@ function export_addons {
             mv /tmp/tmp.yaml "/tmp/addons/${addon}.yaml"
         fi
     done
+
     bashio::log.info "Get addon repositories"
     bashio::api.supervisor GET "/store/repositories" false \
       | jq '. | map(select(.source != null and .source != "core" and .source != "local")) | map({(.name): {source,maintainer,slug}}) | add' > /tmp/tmp.json
     /utils/jsonToYaml.py /tmp/tmp.json
     mv /tmp/tmp.yaml "/tmp/addons/repositories.yaml"
+
+    # Cleanup removed or excluded addon files in repository
     rsync -archive --compress --delete --checksum --prune-empty-dirs -q /tmp/addons/ ${local_repository}/addons
+
+    # Ensure correct permissions
     chmod 644 -R ${local_repository}/addons
 }
 
@@ -177,13 +206,15 @@ function export_addon_configs {
     if bashio::config.true 'export.addon_configs'; then
         bashio::log.info "Exporting /addon_configs directory..."
 
-        # Zielverzeichnis im Repo
+        # Target directory in repo
         mkdir -p "${local_repository}/addons_config"
 
-        # Sync direkt und flach
+        # Sync directly and remove files no longer present
         rsync -av --delete /addon_configs/ "${local_repository}/addons_config/" --exclude '.git'
 
+        # Ensure correct permissions
         chmod 644 -R "${local_repository}/addons_config"
+
         bashio::log.info "Addon configs exported successfully"
     else
         bashio::log.info "Addon config export disabled"
