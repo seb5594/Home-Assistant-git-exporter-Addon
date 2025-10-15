@@ -246,7 +246,14 @@ else
 
     bashio::log.info 'Commit changes and push to remote'
     git add .
-    git commit -m "$(bashio::config 'repository.commit_message')"
+
+    # add the possibility for {DATE} placeholder
+    # original commit_message aus config holen
+    commit_msg="$(bashio::config 'repository.commit_message')"
+    commit_msg="${commit_msg//\{DATE\}/$(date +'%Y-%m-%d %H:%M:%S')}"
+
+    # Commit durchführen
+    git commit -m "$commit_msg"
 
     if [ ! "$pull_before_push" == 'true' ]; then
         git push --set-upstream origin "$branch" -f
