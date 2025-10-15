@@ -28,6 +28,7 @@ options:
   export:
     lovelace: true
     addons: true
+    addon_configs: true
     esphome: true
     node_red: true
   check:
@@ -62,6 +63,7 @@ schema:
   export:
     lovelace: bool
     addons: bool
+    addon_configs: bool
     esphome: bool
     node_red: bool
   check:
