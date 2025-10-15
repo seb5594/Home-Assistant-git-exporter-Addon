@@ -175,7 +175,7 @@ function export_addons {
 
 function export_addon_configs {
     # --- NEW FEATURE: Include addon_configs folder if enabled ---
-    if bashio::config.true 'include_addon_configs'; then
+    if bashio::config.true 'export.addon_configs'; then
         bashio::log.info "Including /addon_configs into export..."
         # Create a temp merge dir
         mkdir -p /tmp/merged_config
@@ -189,7 +189,7 @@ function export_addon_configs {
         SOURCE_DIR="/config"
     fi
 
-    rsync -av --delete "${SOURCE_DIR}/" /data/git/ --exclude '.git'
+    rsync -av --delete "${SOURCE_DIR}/" "${local_repository}/config/" --exclude '.git'
 
     bashio::log.info "Exporting configuration from ${SOURCE_DIR}"
 }
