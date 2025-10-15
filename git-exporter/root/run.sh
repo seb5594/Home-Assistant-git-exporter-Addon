@@ -173,6 +173,27 @@ function export_addons {
     chmod 644 -R ${local_repository}/addons
 }
 
+function export_addon_configs {
+    # --- NEW FEATURE: Include addon_configs folder if enabled ---
+    if bashio::config.true 'include_addon_configs'; then
+        bashio::log.info "Including /addon_configs into export..."
+        # Create a temp merge dir
+        mkdir -p /tmp/merged_config
+        # Copy everything from /config (resolving symlinks)
+        cp -aL /config/. /tmp/merged_config/
+        # Merge real addon_configs content
+        cp -a /addon_configs/. /tmp/merged_config/addons_config/
+        # Replace source path for rsync
+        SOURCE_DIR="/tmp/merged_config"
+    else
+        SOURCE_DIR="/config"
+    fi
+
+    rsync -av --delete "${SOURCE_DIR}/" /data/git/ --exclude '.git'
+
+    bashio::log.info "Exporting configuration from ${SOURCE_DIR}"
+}
+
 function export_node-red {
     bashio::log.info 'Get Node-RED flows'
     rsync -archive --compress --delete --checksum --prune-empty-dirs -q \
@@ -197,6 +218,10 @@ fi
 
 if [ "$(bashio::config 'export.addons')" == 'true' ]; then
     export_addons
+fi
+
+if [ "$(bashio::config 'export.addon_configs')" == 'true' ]; then
+    export_addon_configs
 fi
 
 if [ "$(bashio::config 'export.node_red')" == 'true' ] && [ -d '/config/node-red' ]; then
