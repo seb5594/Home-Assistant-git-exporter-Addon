@@ -194,22 +194,28 @@ function cleanup_repo_files {
     excludes=($(bashio::config 'exclude'))
     excludes=("secrets.yaml" ".storage" ".cloud" "esphome/" ".uuid" "node-red/" "addons_config/" "${excludes[@]}")
     for pattern in "${excludes[@]}"; do
-        find "$local_repository" -path "$local_repository/$pattern" -exec rm -rf {} +
+        # Find matching paths safely, ignore if none exist
+        find "$local_repository" -path "$local_repository/$pattern" 2>/dev/null | while read -r file; do
+            if [ -e "$file" ]; then
+                rm -rf "$file" || bashio::log.warning "Could not remove $file, skipping..."
+            fi
+        done
     done
 
-    # Remove binary files
-    find "$local_repository" -type f ! -name "*.sh" ! -name "*.yaml" ! -name "*.yml" ! -name "*.json" ! -name "*.js" -print0 |
+    # Remove binary files except text/bash scripts
+    find "$local_repository" -type f ! -name "*.sh" ! -name "*.yaml" ! -name "*.yml" ! -name "*.json" ! -name "*.js" -print0 2>/dev/null |
     while IFS= read -r -d '' file; do
-        if file "$file" | grep -qE 'executable|binary|ELF|PE32'; then
+        file_type=$(file "$file")
+        if echo "$file_type" | grep -qE 'executable|binary|ELF|PE32'; then
             bashio::log.info "Removing binary file: $file"
-            rm -f "$file"
+            rm -f "$file" || bashio::log.warning "Could not remove $file, skipping..."
         fi
     done
 
     # Normalize permissions
-    find "$local_repository" -type d -exec chmod 755 {} \;
-    find "$local_repository" -type f -exec chmod 644 {} \;
-    find "$local_repository" -type f -name "*.sh" -exec chmod 755 {} \;
+    find "${local_repository}" -type d -exec chmod 755 {} \; 2>/dev/null
+    find "${local_repository}" -type f -exec chmod 644 {} \; 2>/dev/null
+    find "${local_repository}" -type f -name "*.sh" -exec chmod 755 {} \; 2>/dev/null
     chown -R root:root "$local_repository"
 
     bashio::log.info "✅ Cleanup complete."
