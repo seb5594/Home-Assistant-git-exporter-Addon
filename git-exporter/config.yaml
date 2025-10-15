@@ -1,8 +1,8 @@
 name: Home Assistant Git Exporter
-version: dev
+version: 0.2dev
 slug: git-exporter
 description: Export all of your Home Assistant configuration to a git repository of your choice
-url: https://github.com/Poeschl-HomeAssistant-Addons/git-exporter
+url: https://github.com/seb5594/Home-Assistant-git-exporter-Addon/edit/main/git-exporter
 arch:
   - armhf
   - armv7
@@ -12,7 +12,6 @@ arch:
 startup: once
 boot: manual
 init: false
-image: ghcr.io/poeschl-homeassistant-addons/git-exporter-{arch}
 hassio_api: true
 hassio_role: manager
 map:
