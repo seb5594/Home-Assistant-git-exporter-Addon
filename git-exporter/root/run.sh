@@ -233,16 +233,21 @@ if [ "$(bashio::config 'dry_run')" == 'true' ]; then
     git status
 else
     # --- normalize file permissions before committing ---
-    bashio::log.info 'Normalizing file permissions in repository...'
+    bashio::log.info 'Normalizing file permissions before commit...'
 
-    # Ensure directories are 755 and files are 644
+    # Alle Ordner auf 755
     find "${local_repository}" -type d -exec chmod 755 {} \;
+
+    # Alle Dateien auf 644
     find "${local_repository}" -type f -exec chmod 644 {} \;
 
-    # Fix ownership to root:root (in addon container)
+    # Shell-/Bash-Skripte dürfen 755 behalten
+    find "${local_repository}" -type f -name "*.sh" -exec chmod 755 {} \;
+
+    # Ownership auf root:root
     chown -R root:root "${local_repository}"
 
-    bashio::log.info 'File permissions normalized'
+    bashio::log.info '✅ File permissions normalized. Only .sh files are executable.'
 
     bashio::log.info 'Commit changes and push to remote'
     git add .
