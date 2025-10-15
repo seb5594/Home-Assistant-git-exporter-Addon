@@ -248,3 +248,7 @@ else
 fi
 
 bashio::log.info 'Exporter finished'
+
+# --- stop the addon after success ---
+bashio::log.info 'Stopping addon now...'
+bashio::addon.stop
