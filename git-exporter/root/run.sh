@@ -255,8 +255,13 @@ else
     fi
 fi
 
-bashio::log.info 'Exporter finished'
+bashio::log.info 'Exporter finished successfully. Preparing to stop add-on...'
 
-# --- stop the addon after success ---
-bashio::log.info 'Stopping addon now...'
+# Try to stop the addon gracefully via Supervisor
+if bashio::var.has_value "$(bashio::addon.slug)"; then
+    bashio::log.info 'Requesting Supervisor to stop this add-on...'
+    bashio::addon.stop || bashio::log.warning 'Supervisor stop request failed, exiting manually.'
+fi
+
+bashio::log.info '✅ Git Export complete — shutting down now.'
 exit 0
