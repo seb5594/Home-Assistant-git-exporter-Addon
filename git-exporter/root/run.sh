@@ -126,52 +126,91 @@ function export_ha_config {
     chmod 644 -R "${local_repository}/config"
 }
 
+function export_ha_config {
+    bashio::log.info 'Export Home Assistant configuration'
+
+    # Get excludes from addon config
+    excludes=$(bashio::config 'exclude')
+    excludes=("secrets.yaml" ".storage" ".cloud" "esphome/" ".uuid" "node-red/" "${excludes[@]}")
+
+    # Remove old ESPHome folder from repo
+    [ -d "${local_repository}/config/esphome" ] && rm -r "${local_repository}/config/esphome"
+
+    # Build rsync exclude args
+    exclude_args=$(printf -- '--exclude=%s ' "${excludes[@]}")
+
+    # Sync config, remove obsolete files
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q --include='.gitignore' $exclude_args /config/ "${local_repository}/config/"
+
+    # Redact secrets
+    sed 's/:.*$/: ""/g' /config/secrets.yaml > "${local_repository}/config/secrets.yaml"
+
+    # Normalize permissions
+    chmod 644 -R "${local_repository}/config"
+}
+
 function export_lovelace {
     bashio::log.info 'Export Lovelace configuration'
+
     [ ! -d "${local_repository}/lovelace" ] && mkdir -p "${local_repository}/lovelace"
     mkdir -p '/tmp/lovelace'
+
     find /config/.storage -name "lovelace*" -printf '%f\n' | xargs -I % cp /config/.storage/% /tmp/lovelace/%.json
     /utils/jsonToYaml.py '/tmp/lovelace/' 'data'
+
+    # Only include YAML files, remove excluded or obsolete
     rsync -av --compress --delete --checksum --prune-empty-dirs -q --include='*.yaml' --exclude='*' /tmp/lovelace/ "${local_repository}/lovelace"
+
     chmod 644 -R "${local_repository}/lovelace"
 }
 
 function export_esphome {
     bashio::log.info 'Export ESPHome configuration'
+
+    excludes=$(bashio::config 'exclude')
+    excludes=("secrets.yaml" "${excludes[@]}")
+    exclude_args=$(printf -- '--exclude=%s ' "${excludes[@]}")
+
     rsync -av --compress --delete --checksum --prune-empty-dirs -q \
-         --exclude='.esphome*' --include='*/' --include='.gitignore' --include='*.yaml' --include='*.disabled' --exclude='secrets.yaml' --exclude='*' \
-        /config/esphome/ "${local_repository}/esphome/"
+         --include='*/' --include='.gitignore' --include='*.yaml' --include='*.disabled' $exclude_args /config/esphome/ "${local_repository}/esphome/"
+
     [ -f /config/esphome/secrets.yaml ] && sed 's/:.*$/: ""/g' /config/esphome/secrets.yaml > "${local_repository}/esphome/secrets.yaml"
-    chmod 644 -R ${local_repository}/esphome
+
+    chmod 644 -R "${local_repository}/esphome"
 }
 
 function export_addons {
-    [ -d ${local_repository}/addons ] || mkdir -p ${local_repository}/addons
+    [ -d "${local_repository}/addons" ] || mkdir -p "${local_repository}/addons"
     installed_addons=$(bashio::addons.installed)
     mkdir -p '/tmp/addons/'
+
     for addon in $installed_addons; do
         if [ "$(bashio::addons.installed "${addon}")" == 'true' ]; then
-            bashio::log.info "Get ${addon} configs"
-            bashio::addon.options "$addon" > /tmp/tmp.json
+            bashio::log.info "Export ${addon} options"
+            bashio::addon.options "$addon" >  /tmp/tmp.json
             /utils/jsonToYaml.py /tmp/tmp.json
             mv /tmp/tmp.yaml "/tmp/addons/${addon}.yaml"
         fi
     done
-    bashio::log.info "Get addon repositories"
+
+    bashio::log.info "Export addon repositories"
     bashio::api.supervisor GET "/store/repositories" false \
       | jq '. | map(select(.source != null and .source != "core" and .source != "local")) | map({(.name): {source,maintainer,slug}}) | add' > /tmp/tmp.json
     /utils/jsonToYaml.py /tmp/tmp.json
     mv /tmp/tmp.yaml "/tmp/addons/repositories.yaml"
-    rsync -av --compress --delete --checksum --prune-empty-dirs -q /tmp/addons/ ${local_repository}/addons
-    chmod 644 -R ${local_repository}/addons
+
+    rsync -av --compress --delete --checksum --prune-empty-dirs -q /tmp/addons/ "${local_repository}/addons"
+    chmod 644 -R "${local_repository}/addons"
 }
 
 function export_addon_configs {
     if bashio::config.true 'export.addon_configs'; then
-        bashio::log.info "Exporting /addon_configs directory..."
+        bashio::log.info "Export /addon_configs"
+
         mkdir -p "${local_repository}/addons_config"
         rsync -av --delete /addon_configs/ "${local_repository}/addons_config/" --exclude '.git'
         chmod 644 -R "${local_repository}/addons_config"
+
         bashio::log.info "Addon configs exported successfully"
     else
         bashio::log.info "Addon config export disabled"
@@ -182,8 +221,8 @@ function export_node-red {
     bashio::log.info 'Export Node-RED flows'
     rsync -av --compress --delete --checksum --prune-empty-dirs -q \
           --exclude='flows_cred.json' --exclude='*.backup' --include='flows.json' --include='settings.js' --exclude='*' \
-        /config/node-red/ ${local_repository}/node-red
-    chmod 644 -R ${local_repository}/node-red
+          /config/node-red/ "${local_repository}/node-red"
+    chmod 644 -R "${local_repository}/node-red"
 }
 
 function cleanup_repo_files {
