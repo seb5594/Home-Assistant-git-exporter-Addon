@@ -174,24 +174,20 @@ function export_addons {
 }
 
 function export_addon_configs {
-    # --- NEW FEATURE: Include addon_configs folder if enabled ---
     if bashio::config.true 'export.addon_configs'; then
-        bashio::log.info "Including /addon_configs into export..."
-        # Create a temp merge dir
-        mkdir -p /tmp/merged_config
-        # Copy everything from /config (resolving symlinks)
-        cp -aL /config/. /tmp/merged_config/
-        # Merge real addon_configs content
-        cp -a /addon_configs/. /tmp/merged_config/addons_config/
-        # Replace source path for rsync
-        SOURCE_DIR="/tmp/merged_config"
+        bashio::log.info "Exporting /addon_configs directory..."
+
+        # Zielverzeichnis im Repo
+        mkdir -p "${local_repository}/addons_config"
+
+        # Sync direkt und flach
+        rsync -av --delete /addon_configs/ "${local_repository}/addons_config/" --exclude '.git'
+
+        chmod 644 -R "${local_repository}/addons_config"
+        bashio::log.info "Addon configs exported successfully"
     else
-        SOURCE_DIR="/config"
+        bashio::log.info "Addon config export disabled"
     fi
-
-    rsync -av --delete "${SOURCE_DIR}/" "${local_repository}/config/" --exclude '.git'
-
-    bashio::log.info "Exporting configuration from ${SOURCE_DIR}"
 }
 
 function export_node-red {
@@ -236,6 +232,18 @@ fi
 if [ "$(bashio::config 'dry_run')" == 'true' ]; then
     git status
 else
+    # --- normalize file permissions before committing ---
+    bashio::log.info 'Normalizing file permissions in repository...'
+
+    # Ensure directories are 755 and files are 644
+    find "${local_repository}" -type d -exec chmod 755 {} \;
+    find "${local_repository}" -type f -exec chmod 644 {} \;
+
+    # Fix ownership to root:root (in addon container)
+    chown -R root:root "${local_repository}"
+
+    bashio::log.info 'File permissions normalized'
+
     bashio::log.info 'Commit changes and push to remote'
     git add .
     git commit -m "$(bashio::config 'repository.commit_message')"
