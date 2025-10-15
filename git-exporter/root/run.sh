@@ -23,37 +23,35 @@ function setup_git {
         password=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${password}'))")
     fi
 
-    [ ! -d "$local_repository" ] && mkdir -p "$local_repository"
+    fullurl="https://${username}:${password}@${repository##*https://}"
 
+    # Prüfe ob Repository existiert
     if [ ! -d "$local_repository/.git" ]; then
-        fullurl="https://${username}:${password}@${repository##*https://}"
-        if [ "$pull_before_push" == 'true' ]; then
-            bashio::log.info 'Cloning existing repository...'
-            git clone "$fullurl" "$local_repository" || bashio::log.warning "Repository already exists, skipping clone."
+        if [ -z "$(ls -A "$local_repository" 2>/dev/null)" ]; then
+            bashio::log.info 'Cloning repository into empty folder...'
+            git clone "$fullurl" "$local_repository"
         else
-            bashio::log.info 'Initializing new repository...'
-            git init "$local_repository"
-            git remote add origin "$fullurl"
+            bashio::log.info 'Non-empty folder exists, initializing git...'
+            cd "$local_repository"
+            git init
+            git remote add origin "$fullurl" || true
         fi
-        cd "$local_repository"
-        git checkout "$branch" 2>/dev/null || true
-        git config user.name "$username"
-        git config user.email "${commiter_mail:-git.exporter@home-assistant}"
     else
         cd "$local_repository"
-        bashio::log.info 'Repository already exists, using existing folder.'
+        bashio::log.info 'Using existing Git repository.'
     fi
+
+    # Branch wechseln oder erstellen
+    git fetch origin || true
+    git checkout "$branch" 2>/dev/null || git checkout -b "$branch"
+
+    git config user.name "$username"
+    git config user.email "${commiter_mail:-git.exporter@home-assistant}"
 
     # Reset git secrets
     git config --unset-all 'secrets.allowed' || true
     git config --unset-all 'secrets.patterns' || true
     git config --unset-all 'secrets.providers' || true
-
-    if [ "$pull_before_push" == 'true' ]; then
-        bashio::log.info 'Pulling latest changes...'
-        git fetch || bashio::log.warning 'Git fetch failed, continuing...'
-        git reset --hard "origin/$branch" || bashio::log.warning 'Git reset failed, continuing...'
-    fi
 
     git clean -f -d
 }
