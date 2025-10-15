@@ -26,18 +26,19 @@ function setup_git {
     fullurl="https://${username}:${password}@${repository##*https://}"
 
     # Prüfe ob Repository existiert
-    if [ ! -d "$local_repository/.git" ]; then
-        if [ -z "$(ls -A "$local_repository" 2>/dev/null)" ]; then
+    mkdir -p "$local_repository"
+    cd "$local_repository" || exit 1
+
+    if [ ! -d .git ]; then
+        if [ -z "$(ls -A "$local_repository")" ]; then
             bashio::log.info 'Cloning repository into empty folder...'
-            git clone "$fullurl" "$local_repository"
+            git clone "$fullurl" .
         else
-            bashio::log.info 'Non-empty folder exists, initializing git...'
-            cd "$local_repository"
+            bashio::log.info 'Non-empty folder exists, initializing git repository without touching existing files...'
             git init
             git remote add origin "$fullurl" || true
         fi
     else
-        cd "$local_repository"
         bashio::log.info 'Using existing Git repository.'
     fi
 
@@ -52,8 +53,6 @@ function setup_git {
     git config --unset-all 'secrets.allowed' || true
     git config --unset-all 'secrets.patterns' || true
     git config --unset-all 'secrets.providers' || true
-
-    git clean -f -d
 }
 
 # ----------------------------
@@ -111,33 +110,25 @@ function check_secrets {
 # ----------------------------
 # Export Functions
 # ----------------------------
-# (hier bleiben deine bisherigen export_* Funktionen unverändert)
+# Hier bleiben alle export_* Funktionen unverändert
+# export_ha_config, export_lovelace, export_esphome, export_addons, export_addon_configs, export_node_red
+
 # ----------------------------
 # Cleanup & Permission Normalization
 # ----------------------------
 function cleanup_repo_files {
     bashio::log.info "Cleaning repository before commit..."
 
-    # Remove excluded files
+    # Nur temporäre oder explizit ausgeschlossene Repository-Dateien löschen
     excludes=($(bashio::config 'exclude'))
-    excludes=("secrets.yaml" ".storage" ".cloud" "esphome/" ".uuid" "node-red/" "addons_config/" "${excludes[@]}")
+    excludes=("*.tmp" "${excludes[@]}") # sichere Ausschlüsse
     for pattern in "${excludes[@]}"; do
-        find "$local_repository" -path "$local_repository/$pattern" 2>/dev/null | while read -r file; do
-            [ -e "$file" ] && rm -rf "$file" || bashio::log.warning "Could not remove $file, skipping..."
+        find "$local_repository" -name "$pattern" 2>/dev/null | while read -r file; do
+            [ -e "$file" ] && rm -f "$file" || bashio::log.warning "Could not remove $file, skipping..."
         done
     done
 
-    # Remove binary files except text/bash scripts
-    find "$local_repository" -type f ! -name "*.sh" ! -name "*.yaml" ! -name "*.yml" ! -name "*.json" ! -name "*.js" -print0 2>/dev/null |
-    while IFS= read -r -d '' file; do
-        file_type=$(file "$file")
-        if echo "$file_type" | grep -qE 'executable|binary|ELF|PE32'; then
-            bashio::log.info "Removing binary file: $file"
-            rm -f "$file" || bashio::log.warning "Could not remove $file, skipping..."
-        fi
-    done
-
-    # Normalize permissions
+    # Berechtigungen normalisieren
     find "${local_repository}" -type d -exec chmod 755 {} \; 2>/dev/null
     find "${local_repository}" -type f -exec chmod 644 {} \; 2>/dev/null
     find "${local_repository}" -type f -name "*.sh" -exec chmod 755 {} \; 2>/dev/null
@@ -168,7 +159,7 @@ else
     git add .
     commit_msg="$(bashio::config 'repository.commit_message')"
     commit_msg="${commit_msg//\{DATE\}/$(date +'%Y-%m-%d %H:%M:%S')}"
-    git commit -m "$commit_msg"
+    git commit -m "$commit_msg" || bashio::log.info "No changes to commit."
     if [ "$pull_before_push" != 'true' ]; then
         git push --set-upstream origin "$branch" -f
     else
