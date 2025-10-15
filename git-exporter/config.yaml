@@ -25,7 +25,7 @@ options:
     username: ''
     password: ''
     pull_before_push: true
-    commit_message: Home Assistant Git Exporter
+    commit_message: Home Assistant Git Exporter {DATE}
     branch_name: main
   export:
     lovelace: true
