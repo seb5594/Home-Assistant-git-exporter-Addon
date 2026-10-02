@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.18.1
+
+- Publish the tested five-architecture images through one shared pipeline and a multi-platform manifest.
+- Add metadata-driven build, version, mount, and support badges.
+- Share validation, release, and documentation templates with other Home Assistant projects.
+
 ## 1.18.0
 
 - Rename the app to Home Assistant Git Exporter and replace the development version.

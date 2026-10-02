@@ -1,48 +1,40 @@
 # Home Assistant Git Exporter
 
-**App version: 1.18.0** · [Changelog](git-exporter/CHANGELOG.md)
+<!-- badges:begin (generated from project metadata) -->
+[![Version](https://img.shields.io/badge/version-1.18.1-1877A5?style=for-the-badge)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-git-exporter-Addon/ci.yml?branch=main&label=builds)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml)
+[![Release asset downloads](https://img.shields.io/github/downloads/seb5594/Home-Assistant-git-exporter-Addon/total?label=release%20downloads)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases)
+[![Stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-git-exporter-Addon?label=stars)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-git-exporter-Addon?label=updated)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/commits/main)
 
-Export your entire Home Assistant configuration to a Git repository of your choice.  
-This addon allows you to safely version your setup and optionally share it in public repositories.
+![armhf](https://img.shields.io/badge/armhf-supported-157F71?style=flat-square) ![armv7](https://img.shields.io/badge/armv7-supported-157F71?style=flat-square) ![aarch64](https://img.shields.io/badge/aarch64-supported-157F71?style=flat-square) ![amd64](https://img.shields.io/badge/amd64-supported-157F71?style=flat-square) ![i386](https://img.shields.io/badge/i386-supported-157F71?style=flat-square)
+![stage](https://img.shields.io/badge/stage-stable-2F855A?style=flat-square) ![mount](https://img.shields.io/badge/mount-config-157F71?style=flat-square) ![mount](https://img.shields.io/badge/mount-app%20configs-157F71?style=flat-square)
 
-## What's New / Improvements
+[![Add to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fseb5594%2FHome-Assistant-Apps)
+[![Buy Me a Coffee](https://img.shields.io/badge/Support-Buy%20Me%20a%20Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black&style=for-the-badge)](https://buymeacoffee.com/seb5594)
+[![PayPal](https://img.shields.io/badge/Support-PayPal-0070BA?logo=paypal&logoColor=white&style=for-the-badge)](https://www.paypal.com/donate/?hosted_button_id=QMQPNRENXDN26)
+<!-- badges:end -->
 
-This version includes several improvements for better reliability, security, and maintainability:
+Keep a readable history of your Home Assistant configuration in a Git repository you control. Exporters for Lovelace, ESPHome, Node-RED, app settings, and app configurations are optional; choose the files worth tracking.
 
-* Use the configurable exclude list to keep databases, logs, and other unwanted files out of the export.
-* Secrets from `secrets.yaml` are redacted before committing.
-* Rsync now fully respects the exclude list from the addon configuration, automatically removing deleted or excluded files.
-* File permissions are normalized (folders 755, files 644, `.sh` scripts 755).
-* Export functions (`HA config`, `Lovelace`, `ESPHome`, `Addons`, `Addon configs`, `Node-RED`) are cleaned up and simplified.
-* Commit messages can include `{DATE}` placeholders, automatically replaced with the current timestamp.
-* Automatic cleanup of obsolete files in the repository to prevent stale data.
+## What it exports
 
-[![Release](https://img.shields.io/github/v/release/seb5594/Home-Assistant-git-exporter-Addon)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases)
-[![CI](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml/badge.svg)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml)
+| Source | Result |
+| --- | --- |
+| `/config` | Home Assistant configuration; `secrets.yaml` values are blanked in the export |
+| Lovelace storage | YAML representations of configured dashboards |
+| ESPHome and Node-RED | Selected configuration and flow files |
+| Supervisor apps and repositories | App options and repository list |
+| `/addon_configs` | Other apps' exposed configuration folders |
 
-## Functionality
+Excluded patterns skip files you do not want to track. When enabled, the secret checks scan staged changes before a commit or push; inspect the destination repository before making it public. Configure the Git destination and choose which exports to run in Home Assistant.
 
-* Export Home Assistant configuration.
-* Export Lovelace UI configuration.
-* Export ESPHome device configurations.
-* Export Node-RED flows.
-* Export Supervisor addon configurations and addon options.
-* Check for plaintext secrets based on your `secrets.yaml` and common patterns.
-* Check for plaintext IP addresses and MAC addresses in your config.
+**[Configuration and options](git-exporter/DOCS.md)** · **[Changelog](git-exporter/CHANGELOG.md)** · **[Releases and image references](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases)**
 
-## Example
+## Release and statistics
 
-For an example setup, you can explore my own Home Assistant configuration:  
-[Home Assistant configuration](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/blob/main/git-exporter/config.yaml)
+CI checks the five declared architectures, the actual exporter runtime, and the shared entrypoint. Badges show the real app version, configured mounts, CI status, and GitHub release-asset downloads. GitHub does not provide GHCR pull counts, Home Assistant installation numbers, or countries for these downloads.
 
-The folders in that repo are synced with this addon.
+The legacy 32-bit builds are provided for systems whose Supervisor still supports them. This app runs once and then exits; it has no ingress web UI.
 
-## Badge
-
-If you export your configuration using this addon and want to show support, you can use the following badge in your own README:
-
-[![Home Assistant Git Exporter](https://img.shields.io/badge/Powered%20by-Home%20Assistant%20Git%20Exporter-%23d32f2f)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/blob/main/git-exporter/config.yaml)
-
-```markdown
-[![Home Assistant Git Exporter](https://img.shields.io/badge/Powered%20by-Home%20Assistant%20Git%20Exporter-%23d32f2f)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/blob/main/git-exporter/config.yaml)
-```
+Based on the original Git Exporter work from the Home Assistant add-on community. Maintained by [seb5594](https://github.com/seb5594).
