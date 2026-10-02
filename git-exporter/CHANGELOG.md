@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.19.0
+
+- Build on the official multi-architecture Home Assistant base image `3.24-2026.08.0`; the per-architecture `build.yaml` is gone.
+- Pin every installed Alpine package to an exact version.
+- Drop `armhf`, `armv7` and `i386`: the official base image is published for `amd64` and `aarch64` only.
+- Name release images `ARCH-hass-git-exporter-vVERSION`.
+
 ## 1.18.1
 
 - Publish the tested five-architecture images through one shared pipeline and a multi-platform manifest.

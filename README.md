@@ -1,15 +1,15 @@
 # Home Assistant Git Exporter
 
 <!-- badges:begin (generated from project metadata) -->
-[![version](https://img.shields.io/static/v1?label=version&message=1.18.1&color=1877A5&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases) [![released](https://img.shields.io/github/release-date-pre/seb5594/Home-Assistant-git-exporter-Addon?label=released&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases) [![build](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-git-exporter-Addon/ci.yml?branch=main&label=build&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml)
+[![version](https://img.shields.io/static/v1?label=version&message=1.19.0&color=1877A5&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases) [![released](https://img.shields.io/github/release-date-pre/seb5594/Home-Assistant-git-exporter-Addon?label=released&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases) [![build](https://img.shields.io/github/actions/workflow/status/seb5594/Home-Assistant-git-exporter-Addon/ci.yml?branch=main&label=build&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml)
 
 [![stars](https://img.shields.io/github/stars/seb5594/Home-Assistant-git-exporter-Addon?label=stars&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/stargazers) [![forks](https://img.shields.io/github/forks/seb5594/Home-Assistant-git-exporter-Addon?label=forks&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/forks) [![issues](https://img.shields.io/github/issues/seb5594/Home-Assistant-git-exporter-Addon?label=issues&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/issues) [![updated](https://img.shields.io/github/last-commit/seb5594/Home-Assistant-git-exporter-Addon?label=updated&style=flat)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/commits/main) ![image pulls](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-git-exporter-Addon%2Fbadges%2Fimage-pulls.json&style=flat)
 
-![arch](https://img.shields.io/static/v1?label=arch&message=armhf&color=157F71&style=flat) ![arch](https://img.shields.io/static/v1?label=arch&message=armv7&color=157F71&style=flat) ![arch](https://img.shields.io/static/v1?label=arch&message=aarch64&color=157F71&style=flat) ![arch](https://img.shields.io/static/v1?label=arch&message=amd64&color=157F71&style=flat) ![arch](https://img.shields.io/static/v1?label=arch&message=i386&color=157F71&style=flat)
+![arch](https://img.shields.io/static/v1?label=arch&message=aarch64&color=157F71&style=flat) ![arch](https://img.shields.io/static/v1?label=arch&message=amd64&color=157F71&style=flat)
 
 ![read-write](https://img.shields.io/static/v1?label=read-write&message=config%20%C2%B7%20app%20configs&color=B45309&style=flat)
 
-![stage](https://img.shields.io/static/v1?label=stage&message=stable&color=2F855A&style=flat) ![startup](https://img.shields.io/static/v1?label=startup&message=once&color=5B6770&style=flat) ![boot](https://img.shields.io/static/v1?label=boot&message=manual&color=5B6770&style=flat) ![supervisor api](https://img.shields.io/static/v1?label=supervisor%20api&message=manager&color=B45309&style=flat) ![options](https://img.shields.io/static/v1?label=options&message=18&color=1877A5&style=flat) ![base image](https://img.shields.io/static/v1?label=base%20image&message=base%3A3.22-2025.11.1&color=5B6770&style=flat)
+![stage](https://img.shields.io/static/v1?label=stage&message=stable&color=2F855A&style=flat) ![startup](https://img.shields.io/static/v1?label=startup&message=once&color=5B6770&style=flat) ![boot](https://img.shields.io/static/v1?label=boot&message=manual&color=5B6770&style=flat) ![supervisor api](https://img.shields.io/static/v1?label=supervisor%20api&message=manager&color=B45309&style=flat) ![options](https://img.shields.io/static/v1?label=options&message=18&color=1877A5&style=flat) ![base image](https://img.shields.io/static/v1?label=base%20image&message=base%3A3.24-2026.08.0&color=5B6770&style=flat)
 
 ![image size](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-git-exporter-Addon%2Fbadges%2Fimage-size.json&style=flat) ![runtime tests](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-git-exporter-Addon%2Fbadges%2Fruntime-tests.json&style=flat) ![last build](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fseb5594%2FHome-Assistant-git-exporter-Addon%2Fbadges%2Flast-build.json&style=flat)
 
@@ -34,8 +34,8 @@ Excluded patterns skip files you do not want to track. When enabled, the secret 
 
 ## Release and statistics
 
-CI checks the five declared architectures, the actual exporter runtime, and the shared entrypoint. The badges above show the real app version, mounts, and capabilities from `git-exporter/config.yaml`, plus image sizes and test counts published by the pipeline. GitHub does not provide Home Assistant installation numbers or countries.
+CI checks both supported architectures (`amd64`, `aarch64`), the actual exporter runtime, and the shared entrypoint. The badges above show the real app version, mounts, and capabilities from `git-exporter/config.yaml`, plus image sizes and test counts published by the pipeline. GitHub does not provide Home Assistant installation numbers or countries.
 
-The legacy 32-bit builds are provided for systems whose Supervisor still supports them. This app runs once and then exits; it has no ingress web UI.
+This app runs once and then exits; it has no ingress web UI.
 
 Based on the original Git Exporter work from the Home Assistant add-on community. Maintained by [seb5594](https://github.com/seb5594).
