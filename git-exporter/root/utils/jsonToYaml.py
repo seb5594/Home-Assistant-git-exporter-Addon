@@ -3,7 +3,7 @@ import json
 import sys
 import os
 import yaml
-from dotty_dict import dotty
+# Previous dependency: from dotty_dict import dotty
 
 def convert_file(file, path):
     yaml_file_name = os.path.splitext(file)[0] + ".yaml"
@@ -11,7 +11,10 @@ def convert_file(file, path):
     with open(file, 'r') as infile:
         with open(yaml_file_name, 'w+') as outfile:
             if path is not None:
-                data = dotty(json.load(infile)).get(path)
+                # Replaces dotty(json.load(infile)).get(path) without a pip dependency.
+                data = json.load(infile)
+                for key in path.split('.'):
+                    data = data.get(key) if isinstance(data, dict) else None
             else:
                 data = json.load(infile)
 
@@ -28,4 +31,6 @@ if os.path.isfile(input_file):
 else:
     #print ('Convert folder ' + input_file)
     for json_file in os.listdir(input_file):
-        convert_file(os.path.dirname(input_file) + '/' + json_file, path)
+        if json_file.endswith('.json'):
+            # Previous dirname-based join broke paths without a trailing slash.
+            convert_file(os.path.join(input_file, json_file), path)
