@@ -21,7 +21,8 @@ FROM ${BUILD_FROM} AS running
 # Previous pip dependencies: PyYAML==5.3.1 dotty-dict==1.3.1.
 RUN apk add --no-cache git rsync grep sed python3 py3-yaml findutils
 
-ARG BUILD_VERSION=1.18.0
+# Previous release: ARG BUILD_VERSION=1.18.0
+ARG BUILD_VERSION=1.18.1
 ARG BUILD_ARCH=amd64
 LABEL io.hass.version="${BUILD_VERSION}" \
     io.hass.type="addon" \
