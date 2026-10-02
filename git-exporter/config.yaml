@@ -1,15 +1,11 @@
 name: Home Assistant Git Exporter
-# Previous release: version: '1.18.0'
-version: '1.18.1'
+version: '1.19.0'
 slug: git-exporter
 description: Export all of your Home Assistant configuration to a git repository of your choice
 url: https://github.com/seb5594/Home-Assistant-git-exporter-Addon
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
-  - i386
 startup: once
 boot: manual
 init: true
