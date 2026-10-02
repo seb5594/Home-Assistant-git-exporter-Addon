@@ -11,9 +11,10 @@ repository:
 export:
   lovelace: true
   addons: true
+  addon_configs: true
   esphome: true
   node_red: true
-checks:
+check:
   enabled: true
   check_for_secrets: true
   check_for_ips: true

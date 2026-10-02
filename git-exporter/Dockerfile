@@ -1,4 +1,6 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.22-2025.11.1
+# BUILD_FROM is pinned in build.yaml for each architecture.
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS build
 
 # Previous Alpine 3.16 pins: git=2.36.6-r0 and make=4.3-r0.
@@ -10,6 +12,7 @@ RUN git config --global advice.detachedHead false && \
     git clone --depth 1 https://github.com/awslabs/git-secrets.git -b ${GIT_SECRET_VERSION} /git-secrets && \
     cd /git-secrets && make install
 
+# hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS running
 
 # Replaces obsolete Alpine 3.16 packages and the pip/PyYAML build step.
