@@ -1,5 +1,7 @@
 # Home Assistant Git Exporter
 
+**App version: 1.18.0** · [Changelog](git-exporter/CHANGELOG.md)
+
 Export your entire Home Assistant configuration to a Git repository of your choice.  
 This addon allows you to safely version your setup and optionally share it in public repositories.
 
@@ -7,7 +9,7 @@ This addon allows you to safely version your setup and optionally share it in pu
 
 This version includes several improvements for better reliability, security, and maintainability:
 
-* Only text-based files (YAML, JSON, shell scripts) are committed; binaries are automatically excluded.
+* Use the configurable exclude list to keep databases, logs, and other unwanted files out of the export.
 * Secrets from `secrets.yaml` are redacted before committing.
 * Rsync now fully respects the exclude list from the addon configuration, automatically removing deleted or excluded files.
 * File permissions are normalized (folders 755, files 644, `.sh` scripts 755).
