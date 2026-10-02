@@ -1,7 +1,6 @@
 # Official Home Assistant base image, pinned to a published release.
 ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.08.0
 
-# hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS build
 
 RUN apk add --no-cache \
@@ -12,12 +11,10 @@ RUN apk add --no-cache \
 
 # renovate: datasource=github-tags depName=awslabs/git-secrets
 ENV GIT_SECRET_VERSION=1.3.0
-# hadolint ignore=DL3003
 RUN git config --global advice.detachedHead false && \
     git clone --depth 1 https://github.com/awslabs/git-secrets.git -b ${GIT_SECRET_VERSION} /git-secrets && \
-    cd /git-secrets && make install
+    make -C /git-secrets install
 
-# hadolint ignore=DL3006
 FROM ${BUILD_FROM} AS running
 
 RUN apk add --no-cache \
