@@ -17,10 +17,8 @@ This version includes several improvements for better reliability, security, and
 * Commit messages can include `{DATE}` placeholders, automatically replaced with the current timestamp.
 * Automatic cleanup of obsolete files in the repository to prevent stale data.
 
-[![Release][release-badge]][release]
-![Addon Stage][stage-badge]
-
-[![Donate][donation-badge]][donation-url]
+[![Release](https://img.shields.io/github/v/release/seb5594/Home-Assistant-git-exporter-Addon)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/releases)
+[![CI](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml/badge.svg)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/actions/workflows/ci.yml)
 
 ## Functionality
 
@@ -47,3 +45,4 @@ If you export your configuration using this addon and want to show support, you 
 
 ```markdown
 [![Home Assistant Git Exporter](https://img.shields.io/badge/Powered%20by-Home%20Assistant%20Git%20Exporter-%23d32f2f)](https://github.com/seb5594/Home-Assistant-git-exporter-Addon/blob/main/git-exporter/config.yaml)
+```

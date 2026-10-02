@@ -220,7 +220,10 @@ else
 fi
 
 bashio::log.info 'Exporter finished. Stopping add-on...'
-[ -n "$(bashio::addon.slug)" ] && bashio::addon.stop || true
+# Previous chained condition also swallowed a failed stop request.
+if [ -n "$(bashio::addon.slug)" ]; then
+    bashio::addon.stop || true
+fi
 bashio::log.info '✅ Git Export complete.'
 exit 0
 }
