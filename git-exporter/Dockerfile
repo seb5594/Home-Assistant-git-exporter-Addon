@@ -40,9 +40,9 @@ ARG MAKE_VERSION
 RUN apk add --no-cache git=${GIT_VERSION} make=${MAKE_VERSION}
 
 # renovate: datasource=github-tags depName=awslabs/git-secrets
-ENV GIT_SECRET_VERSION=1.3.0
+ARG GIT_SCANNER_VERSION=1.3.0
 RUN git config --global advice.detachedHead false && \
-    git clone --depth 1 https://github.com/awslabs/git-secrets.git -b ${GIT_SECRET_VERSION} /git-secrets && \
+    git clone --depth 1 https://github.com/awslabs/git-secrets.git -b ${GIT_SCANNER_VERSION} /git-secrets && \
     make -C /git-secrets install
 
 FROM ${BUILD_FROM} AS running
