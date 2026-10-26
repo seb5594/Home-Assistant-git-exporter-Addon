@@ -1,0 +1,185 @@
+configuration:
+  repositories:
+    name: Repositories
+    description: Ein Eintrag für jedes Git-Repository, in das die Konfiguration exportiert wird. Beliebig viele Repositories bei GitHub, GitLab, Gitea, Bitbucket oder auf einem eigenen Server lassen sich nebeneinander nutzen. Jedes hat seinen eigenen Zugang und legt fest, ob es für die Öffentlichkeit oder für den privaten Gebrauch gedacht ist.
+    fields:
+      name:
+        name: Name
+        description: Ein kurzer Name für dieses Repository. Er erscheint in der Weboberfläche und im Protokoll und benennt die Arbeitskopie des Repositories in der App.
+      url:
+        name: Adresse
+        description: Die https-Adresse des Repositories, zum Beispiel https://github.com/du/home-assistant.git oder http://db21ed7f-gitea:3000/du/config.git für die Gitea-App. SSH-Adressen werden nicht unterstützt.
+      audience:
+        name: Für wen
+        description: public entfernt oder zensiert private Daten, bevor etwas geschrieben wird (die secrets.yaml wird geleert, Adressen und geheime Werte werden ersetzt). private exportiert alles unverändert, auch die secrets.yaml, und prüft, ob das Repository wirklich privat ist.
+      username:
+        name: Benutzername
+        description: Dein Benutzername beim Git-Anbieter.
+      password:
+        name: Zugriffstoken
+        description: Ein persönliches Zugriffstoken (oder das Passwort) mit Schreibrecht auf das Repository. Ein Token ist die sicherere Wahl.
+      email:
+        name: E-Mail-Adresse
+        description: Die Adresse, die die Commits signiert. Leer lassen für eine neutrale.
+      branch:
+        name: Branch
+        description: Der Branch, der den Export erhält. Er wird angelegt, wenn es ihn nicht gibt. Leer bedeutet main.
+      provider:
+        name: Git-Anbieter
+        description: Welche Art Server das ist, damit sich feststellen lässt, ob das Repository öffentlich ist. auto erkennt GitHub, GitLab, Gitea, Forgejo, Codeberg und Bitbucket an der Adresse.
+      commit_message:
+        name: Commit-Nachricht
+        description: Der Text jedes Commits. {DATE} wird durch Datum und Uhrzeit ersetzt.
+      pull_before_push:
+        name: Vom Stand des Repositories ausgehen
+        description: Den Branch zuerst holen und darauf aufbauen. Nur ausschalten, wenn über einen lokalen Verlauf hochgeladen werden soll.
+      ssl_verification:
+        name: Zertifikat prüfen
+        description: Nur für einen Server mit selbst signiertem Zertifikat ausschalten. Alles, was du sendest, ist dann unterwegs lesbar.
+      check_visibility:
+        name: Prüfen, wer das Repository sehen kann
+        description: Bevor in ein privates Repository geschrieben wird, beim Anbieter nachfragen, ob es öffentlich ist. Falls ja, wird nichts hochgeladen, bis du in der Weboberfläche entscheidest. Standardmäßig an.
+      allow_public_remote:
+        name: Öffentliches Repository für privaten Gebrauch erlauben
+        description: Die Warnung überspringen, wenn ein Repository für privaten Gebrauch sich als öffentlich herausstellt. Dann kann jeder alles lesen, auch die Geheimnisse. Nur für den Fall, dass du genau weißt, was du tust.
+      enabled:
+        name: Aktiv
+        description: Ein Repository ausschalten, ohne es zu entfernen.
+  repository:
+    name: Repository aus Version 1 (wird automatisch verschoben)
+    description: Das einzelne Repository früherer Versionen. Es wird beim ersten Start in die Liste oben verschoben und diese Gruppe geleert. Lass sie, wie sie ist.
+    fields:
+      url:
+        name: Adresse
+        description: Die https-Adresse des Repositories.
+      email:
+        name: E-Mail-Adresse
+        description: Die Adresse, die die Commits signiert.
+      username:
+        name: Benutzername
+        description: Dein Benutzername beim Git-Anbieter.
+      password:
+        name: Zugriffstoken
+        description: Dein Zugriffstoken oder Passwort.
+      pull_before_push:
+        name: Vom Stand des Repositories ausgehen
+        description: Den Branch zuerst holen und darauf aufbauen.
+      commit_message:
+        name: Commit-Nachricht
+        description: Der Text jedes Commits.
+      branch_name:
+        name: Branch
+        description: Der Branch, der den Export erhält.
+      ssl_verification:
+        name: Zertifikat prüfen
+        description: Nur für ein selbst signiertes Zertifikat ausschalten.
+  export:
+    name: Was exportiert wird
+    description: Die Teile von Home Assistant, die in die Repositories gehen. Welche Dateien darin ausgelassen werden, bestimmen die Vorgaben und Muster, die du in der Weboberfläche der App ausprobieren kannst.
+    fields:
+      lovelace:
+        name: Dashboards
+        description: Deine Lovelace-Dashboards als YAML-Dateien (Ordner lovelace).
+      addons:
+        name: Optionen der anderen Apps
+        description: Die Konfiguration jeder installierten App und die Liste der App-Repositories (Ordner addons).
+      addon_configs:
+        name: Konfigurationsordner der Apps
+        description: Die öffentlichen Konfigurationsordner aller Apps, /app_configs (früher /addon_configs). Beide Namen werden gefunden (Ordner addons_config).
+      esphome:
+        name: ESPHome
+        description: Die YAML-Dateien von ESPHome (Ordner esphome).
+      node_red:
+        name: Node-RED
+        description: Die Flows und Einstellungen von Node-RED, ohne Zugangsdaten (Ordner node-red).
+      local_apps:
+        name: Lokale Apps
+        description: Der Ordner mit deinen eigenen Apps, /local_apps (früher /local_addons oder /addons). Standardmäßig aus (Ordner local_apps).
+  presets:
+    name: Vorgaben für das Auslassen
+    description: Gruppen von Mustern für das, was selten in ein Repository gehört. Alle sind an, bis du eine ausschaltest. Die Weboberfläche zeigt, was jede mit deinen Dateien macht.
+    fields:
+      databases:
+        name: Datenbanken
+        description: SQLite- und andere Datenbankdateien, auch die Recorder-Datenbank.
+      logs:
+        name: Protokolldateien
+        description: Protokolldateien von Home Assistant und anderer Software.
+      caches:
+        name: Caches und temporäre Dateien
+        description: Python-Caches, heruntergeladene Abhängigkeiten, Überbleibsel von Editoren und Dateimanagern.
+      runtime_state:
+        name: Laufzeitzustand von Home Assistant
+        description: Sperrdateien, die Versionsmarke, bekannte Geräte und IP-Sperren.
+      generated_content:
+        name: Erzeugte Inhalte
+        description: Sprachausgabe-Audio, hochgeladene Bilder und Kamera-Schnappschüsse.
+      credentials:
+        name: Zugangsdaten
+        description: Umgebungsdateien, Token-Dateien, Passwortspeicher und VPN-Profile.
+      keys_certificates:
+        name: Schlüssel und Zertifikate
+        description: Private Schlüssel und Zertifikate.
+      media:
+        name: Audio und Video
+        description: Große Audio- und Videodateien.
+      archives:
+        name: Archive
+        description: Zip- und Tar-Archive.
+      backup_copies:
+        name: Kopien und alte Versionen
+        description: Dateien und Ordner mit .bak, .backup, .old oder .orig im Namen.
+      hacs_downloads:
+        name: Eigene Integrationen und Karten
+        description: Was HACS und andere Stores herunterladen (custom_components, www/community). Es lässt sich neu installieren. Eine eigene Integration behältst du mit einem Muster wie !/custom_components/meine_integration.
+      development:
+        name: Entwicklungsreste
+        description: Notebooks, virtuelle Umgebungen und Editor-Ordner.
+      app_runtime_data:
+        name: Laufzeitdaten von Apps
+        description: Die Ordner, in denen Apps Datenbanken, Uploads, Caches, Protokolle und Zertifikate ablegen.
+  exclude:
+    name: Eigene Ausschluss-Muster
+    description: Dateien und Ordner, die ausgelassen werden, geschrieben wie in einer .gitignore-Datei. *.db für einen Namen überall, deps/ für einen Ordner, /tts/ für einen Ordner ganz oben, custom_components/foo für einen Pfad, !behalten.yaml, um etwas zurückzuhalten; das letzte passende Muster gewinnt. In der Weboberfläche kannst du Muster ausprobieren und mit einem Klick hinzufügen.
+  secrets:
+    name: Zusätzliche geheime Werte
+    description: Werte, die nicht in der secrets.yaml stehen, aber nie in einem Repository für die Öffentlichkeit auftauchen dürfen. Sie werden überall ersetzt, wo sie gefunden werden.
+  allowed_secrets:
+    name: Erlaubte Werte
+    description: Texte, die nie zensiert werden, zum Beispiel eine öffentliche Adresse, die absichtlich in deiner Konfiguration steht.
+  check:
+    name: Prüfungen für öffentliche Repositories
+    description: Wonach in den Dateien eines Repositories für die Öffentlichkeit gesucht wird. Private Repositories werden nicht verändert.
+    fields:
+      enabled:
+        name: Prüfungen
+        description: Das Zensieren insgesamt ein- oder ausschalten.
+      check_for_secrets:
+        name: Nach Geheimnissen suchen
+        description: Die Werte der secrets.yaml (Blockwerte, verschachtelte Einträge und Kommentare werden verstanden), Schlüssel mit Namen wie password oder token, Passwörter in URLs und E-Mail-Adressen.
+      check_for_ips:
+        name: Nach IP- und MAC-Adressen suchen
+        description: IPv4-, IPv6- und MAC-Adressen werden durch Adressen aus den Dokumentationsbereichen ersetzt, dieselbe Adresse immer durch dieselbe. Versionsnummern, Netzmasken und bekannte DNS-Server bleiben.
+      on_finding:
+        name: Wenn etwas gefunden wird
+        description: censor ersetzt es und exportiert die Datei. block stoppt stattdessen den Export dieses Repositories.
+  limits:
+    name: Grenzen
+    description: Hält sehr große Dateien aus den Repositories heraus.
+    fields:
+      max_file_size_mb:
+        name: Größte Datei
+        description: Dateien über dieser Größe in MB werden ausgelassen. Standard ist 5.
+  behavior:
+    name: Verhalten
+    description: Wann die App exportiert und wann sie sich wieder beendet.
+    fields:
+      export_on_start:
+        name: Beim Start der App exportieren
+        description: Das Starten der App exportiert jedes Repository, wie es frühere Versionen taten. Ausschalten, um nur über die Weboberfläche zu exportieren.
+      stop_after_minutes:
+        name: Nach Leerlauf beenden
+        description: Nach dem Export wartet die App so viele Minuten ohne Nutzung der Weboberfläche und beendet sich dann selbst. 0 beendet sie gleich nach dem Export, wie es frühere Versionen taten. Standard ist 10.
+      keep_running:
+        name: Weiterlaufen lassen
+        description: Nie von selbst beenden, damit die Weboberfläche immer da ist.

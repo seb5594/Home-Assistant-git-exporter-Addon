@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# The exporter ends by itself when nobody needs it any more (exit code 0). Any other end stops the
+# whole app, so that the Supervisor shows it as stopped instead of s6 restarting it in a loop.
+
+if [[ "${1:-0}" -ne 0 && "${1:-0}" -ne 256 ]]; then
+  bashio::log.warning "Git Exporter stopped (exit code ${1}); stopping the app."
+fi
+/run/s6/basedir/bin/halt
