@@ -1,0 +1,185 @@
+configuration:
+  repositories:
+    name: Repositories
+    description: One entry for each git repository the configuration is exported to. Any number of repositories on GitHub, GitLab, Gitea, Bitbucket or your own server can be used side by side. Each has its own login and decides whether it is meant for the public or for private use.
+    fields:
+      name:
+        name: Name
+        description: A short name for this repository. It shows in the web interface and in the log; it also names the working copy of the repository inside the app.
+      url:
+        name: Address
+        description: The https address of the repository, for example https://github.com/you/home-assistant.git or http://db21ed7f-gitea:3000/you/config.git for the Gitea app. SSH addresses are not supported.
+      audience:
+        name: Who is it for
+        description: public removes or censors private data before anything is written (secrets.yaml is emptied, addresses and secret values are replaced). private exports everything as it is, secrets.yaml included, and checks that the repository really is private.
+      username:
+        name: User name
+        description: Your user name at the git host.
+      password:
+        name: Access token
+        description: A personal access token (or the password) with write access to the repository. A token is the safer choice.
+      email:
+        name: E-mail address
+        description: The address that signs the commits. Leave empty to use a neutral one.
+      branch:
+        name: Branch
+        description: The branch that receives the export. It is created when it does not exist. Empty means main.
+      provider:
+        name: Git host
+        description: Which kind of server this is, used to find out whether the repository is public. auto recognises GitHub, GitLab, Gitea, Forgejo, Codeberg and Bitbucket by their address.
+      commit_message:
+        name: Commit message
+        description: The text of each commit. {DATE} is replaced by the date and time.
+      pull_before_push:
+        name: Start from the remote state
+        description: Fetch the branch first and build on it. Switch it off only if you want to push over a local history.
+      ssl_verification:
+        name: Check the certificate
+        description: Switch off only for a server with a self-signed certificate. Anything you send can then be read on the way.
+      check_visibility:
+        name: Check who can see the repository
+        description: Before a private repository is written to, ask the host whether it is public. If it is, nothing is pushed until you decide in the web interface. On by default.
+      allow_public_remote:
+        name: Allow a public repository for private use
+        description: Skip the warning when a repository meant for private use turns out to be public. Everything, secrets included, is then readable by anyone. Only for the case that you know what you are doing.
+      enabled:
+        name: Active
+        description: Switch a repository off without removing it.
+  repository:
+    name: Repository of version 1 (moved automatically)
+    description: The single repository of earlier versions. It is moved into the list above at the first start and this group is emptied. Leave it as it is.
+    fields:
+      url:
+        name: Address
+        description: The https address of the repository.
+      email:
+        name: E-mail address
+        description: The address that signs the commits.
+      username:
+        name: User name
+        description: Your user name at the git host.
+      password:
+        name: Access token
+        description: Your access token or password.
+      pull_before_push:
+        name: Start from the remote state
+        description: Fetch the branch first and build on it.
+      commit_message:
+        name: Commit message
+        description: The text of each commit.
+      branch_name:
+        name: Branch
+        description: The branch that receives the export.
+      ssl_verification:
+        name: Check the certificate
+        description: Switch off only for a self-signed certificate.
+  export:
+    name: What is exported
+    description: The parts of Home Assistant that go into the repositories. Which files inside them are left out is decided by the presets and the patterns, which you can try out in the web interface of the app.
+    fields:
+      lovelace:
+        name: Dashboards
+        description: Your Lovelace dashboards as YAML files (folder lovelace).
+      addons:
+        name: Options of the other apps
+        description: The configuration of every installed app and the list of app repositories (folder addons).
+      addon_configs:
+        name: App configuration folders
+        description: The public configuration folders of all apps, /app_configs (formerly /addon_configs). Both names are found (folder addons_config).
+      esphome:
+        name: ESPHome
+        description: The YAML files of ESPHome (folder esphome).
+      node_red:
+        name: Node-RED
+        description: The flows and the settings of Node-RED, without credentials (folder node-red).
+      local_apps:
+        name: Local apps
+        description: The folder with your own apps, /local_apps (formerly /local_addons or /addons). Off by default (folder local_apps).
+  presets:
+    name: Presets for what is left out
+    description: Groups of patterns for what rarely belongs into a repository. All are on unless you switch one off. The web interface shows what each one does to your files.
+    fields:
+      databases:
+        name: Databases
+        description: SQLite and other database files, including the recorder database.
+      logs:
+        name: Log files
+        description: Log files of Home Assistant and of other software.
+      caches:
+        name: Caches and temporary files
+        description: Python caches, downloaded dependencies, leftovers of editors and file managers.
+      runtime_state:
+        name: Runtime state of Home Assistant
+        description: Lock files, the version marker, known devices and IP bans.
+      generated_content:
+        name: Generated content
+        description: Text-to-speech audio, uploaded images and camera snapshots.
+      credentials:
+        name: Credentials
+        description: Environment files, token files, password stores and VPN profiles.
+      keys_certificates:
+        name: Keys and certificates
+        description: Private keys and certificates.
+      media:
+        name: Audio and video
+        description: Large audio and video files.
+      archives:
+        name: Archives
+        description: Zip and tar archives.
+      backup_copies:
+        name: Copies and old versions
+        description: Files and folders named .bak, .backup, .old or .orig.
+      hacs_downloads:
+        name: Custom integrations and cards
+        description: What HACS and other stores download (custom_components, www/community). It can be installed again. Keep an integration of your own with a pattern such as !/custom_components/my_integration.
+      development:
+        name: Development leftovers
+        description: Notebooks, virtual environments and editor folders.
+      app_runtime_data:
+        name: Runtime data of apps
+        description: The folders in which apps keep databases, uploads, caches, logs and certificates.
+  exclude:
+    name: Your own exclude patterns
+    description: Files and folders to leave out, written like a .gitignore file. *.db for a name anywhere, deps/ for a folder, /tts/ for a folder at the top, custom_components/foo for a path, !keep.yaml to keep something back; the last matching pattern wins. The web interface lets you try patterns and add them with a click.
+  secrets:
+    name: Extra secret values
+    description: Values that are not in secrets.yaml but must never appear in a repository for the public. They are replaced wherever they are found.
+  allowed_secrets:
+    name: Allowed values
+    description: Texts that are never censored, for example a public address that stands in your configuration on purpose.
+  check:
+    name: Checks for public repositories
+    description: What is looked for in the files of a repository that is meant for the public. Private repositories are not changed.
+    fields:
+      enabled:
+        name: Checks
+        description: Switch the censoring on or off as a whole.
+      check_for_secrets:
+        name: Look for secrets
+        description: The values of secrets.yaml (block scalars, nested entries and comments are understood), keys named like secrets such as password or token, passwords in URLs and e-mail addresses.
+      check_for_ips:
+        name: Look for IP and MAC addresses
+        description: IPv4, IPv6 and MAC addresses are replaced by addresses from the documentation ranges, the same address always by the same one. Version numbers, netmasks and well-known DNS servers stay.
+      on_finding:
+        name: When something is found
+        description: censor replaces it and exports the file. block stops the export of that repository instead.
+  limits:
+    name: Limits
+    description: Keeps very large files out of the repositories.
+    fields:
+      max_file_size_mb:
+        name: Largest file
+        description: Files above this size in MB are left out. The default is 5.
+  behavior:
+    name: Behaviour
+    description: When the app exports and when it stops again.
+    fields:
+      export_on_start:
+        name: Export when the app starts
+        description: Starting the app exports every repository, as the earlier versions did. Switch it off to export only from the web interface.
+      stop_after_minutes:
+        name: Stop after idle minutes
+        description: After the export the app waits this many minutes without use of the web interface and stops itself. 0 stops right after the export, as the earlier versions did. The default is 10.
+      keep_running:
+        name: Keep running
+        description: Never stop by itself, so that the web interface is always there.

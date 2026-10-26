@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+# Starts the exporter: the web interface behind ingress and, depending on the options, the export.
+
+bashio::log.level info
+exec python3 -m exporter

@@ -1,81 +1,118 @@
 name: Home Assistant Git Exporter
-version: '1.19.0'
+version: "2.0.0-beta.1"
 slug: git-exporter
-description: Export all of your Home Assistant configuration to a git repository of your choice
+description: Exports your Home Assistant configuration to one or more git repositories (GitHub, GitLab, Gitea and others), for private use or for the public, with a preview and a file browser.
 url: https://github.com/seb5594/Home-Assistant-git-exporter-Addon
+stage: experimental
 arch:
   - aarch64
   - amd64
   - armv7
   - armhf
   - i386
-startup: once
+startup: application
 boot: manual
-init: true
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:git
+panel_title: Git Exporter
 hassio_api: true
 hassio_role: manager
 map:
   - type: config
-    read_only: false
+    read_only: true
   - type: all_addon_configs
-    read_only: false
+    read_only: true
+  - type: addons
+    read_only: true
+backup_exclude:
+  - repositories/**
 options:
-  repository:
-    url: ''
-    username: ''
-    password: ''
-    pull_before_push: true
-    commit_message: Home Assistant Git Exporter {DATE}
-    branch_name: main
+  repositories: []
+  repository: {}
   export:
     lovelace: true
     addons: true
     addon_configs: true
     esphome: true
     node_red: true
+    local_apps: false
+  presets: {}
+  exclude: []
+  secrets: []
+  allowed_secrets: []
   check:
     enabled: true
     check_for_secrets: true
     check_for_ips: true
-  exclude:
-    - '*.db'
-    - '*.log*'
-    - __pycache__
-    - ._*
-    - .DS_Store
-    - deps/
-    - known_devices.yaml
-    - tts/
-    - '*.db-shm'
-    - '*.db-wal'
-    - '*.gz'
-  secrets: []
-  allowed_secrets: []
-  dry_run: false
+    on_finding: censor
+  limits:
+    max_file_size_mb: 5
+  behavior:
+    export_on_start: true
+    stop_after_minutes: 10
+    keep_running: false
 schema:
+  repositories:
+    - name: str
+      url: match(^https?://.+)
+      audience: list(public|private)
+      username: str?
+      password: password?
+      email: str?
+      branch: str?
+      provider: list(auto|github|gitlab|gitea|forgejo|bitbucket|other)?
+      commit_message: str?
+      pull_before_push: bool?
+      ssl_verification: bool?
+      check_visibility: bool?
+      allow_public_remote: bool?
+      enabled: bool?
   repository:
-    url: match(https://.*)
-    email: match(.+@.+)?
-    username: str
-    password: password
-    pull_before_push: bool
-    commit_message: str
-    branch_name: str
+    url: str?
+    email: str?
+    username: str?
+    password: password?
+    pull_before_push: bool?
+    commit_message: str?
+    branch_name: str?
     ssl_verification: bool?
   export:
-    lovelace: bool
-    addons: bool
-    addon_configs: bool
-    esphome: bool
-    node_red: bool
-  check:
-    enabled: bool
-    check_for_secrets: bool
-    check_for_ips: bool
+    lovelace: bool?
+    addons: bool?
+    addon_configs: bool?
+    esphome: bool?
+    node_red: bool?
+    local_apps: bool?
+  presets:
+    databases: bool?
+    logs: bool?
+    caches: bool?
+    runtime_state: bool?
+    generated_content: bool?
+    credentials: bool?
+    keys_certificates: bool?
+    media: bool?
+    archives: bool?
+    backup_copies: bool?
+    hacs_downloads: bool?
+    development: bool?
+    app_runtime_data: bool?
   exclude:
     - str
   secrets:
     - str
   allowed_secrets:
     - str
-  dry_run: bool
+  check:
+    enabled: bool?
+    check_for_secrets: bool?
+    check_for_ips: bool?
+    on_finding: list(censor|block)?
+  limits:
+    max_file_size_mb: int(1,)?
+  behavior:
+    export_on_start: bool?
+    stop_after_minutes: int(0,1440)?
+    keep_running: bool?
